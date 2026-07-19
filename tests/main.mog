@@ -1,0 +1,12 @@
+const path = @import("github.com/moglang/path")
+fn assert(condition bool, message str) void { if (!condition) error(message) }
+
+assert(path.normalize("a/./b/../c") == "a/c", "relative normalization")
+assert(path.normalize("/a//b/../c") == "/a/c", "absolute normalization")
+assert(path.join("a/b", "../c") == "a/c", "join")
+assert(path.basename("a/b.txt") == "b.txt", "basename")
+assert(path.dirname("a/b.txt") == "a", "dirname")
+assert(path.dirname("file") == ".", "rootless dirname")
+assert(path.extension("a/b.txt") == ".txt", "extension")
+assert(path.extension(".gitignore") == "", "dotfile extension")
+assert(path.relative("a/b", "a/c/d") == "../c/d", "relative path")

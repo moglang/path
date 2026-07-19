@@ -1,0 +1,92 @@
+fn _sep(code i64) bool { return code == 47 || code == 92 }
+
+fn _parts(value str) Array<str> {
+    var result Array<str> = []
+    var start i64 = 0
+    var index i64 = 0
+    while (index <= len(value)) {
+        if (index == len(value) || _sep(charCodeAt(value, index))) {
+            if (index > start) result.push(slice(value, start, index))
+            start = index + 1
+        }
+        index = index + 1
+    }
+    return result
+}
+
+fn join(base str, child str) str {
+    if (len(base) == 0) return normalize(child)
+    if (len(child) == 0) return normalize(base)
+    return normalize(base + "/" + child)
+}
+
+fn normalize(value str) str {
+    var absolute bool = len(value) > 0 && _sep(charCodeAt(value, 0))
+    var stack Array<str> = []
+    for (var part str : _parts(value)) {
+        if (part == ".") { } else if (part == "..") {
+            if (!stack.isEmpty() && stack.last() != "..") { stack.pop() } else if (!absolute) { stack.push(part) }
+        } else { stack.push(part) }
+    }
+    var out str = ""
+    if (absolute) out = "/"
+    var index i64 = 0
+    while (index < stack.size()) {
+        if (index > 0) out = out + "/"
+        out = out + stack[index]
+        index = index + 1
+    }
+    if (len(out) == 0 && !absolute) return "."
+    return out
+}
+
+fn basename(value str) str {
+    var parts Array<str> = _parts(normalize(value))
+    if (parts.isEmpty()) return ""
+    return parts.last()
+}
+
+fn dirname(value str) str {
+    var normalized str = normalize(value)
+    var name str = basename(normalized)
+    if (len(name) == 0) return normalized
+    var end i64 = len(normalized) - len(name)
+    if (end > 1) return slice(normalized, 0, end - 1)
+    if (end == 1) return "/"
+    return "."
+}
+
+fn extension(value str) str {
+    var name str = basename(value)
+    var index i64 = len(name) - 1
+    while (index >= 0) {
+        if (charCodeAt(name, index) == 46) {
+            if (index == 0) return ""
+            return slice(name, index, len(name))
+        }
+        index = index - 1
+    }
+    return ""
+}
+
+fn relative(base str, target str) str {
+    var from Array<str> = _parts(normalize(base))
+    var to Array<str> = _parts(normalize(target))
+    var common i64 = 0
+    while (common < from.size() && common < to.size() && from[common] == to[common]) common = common + 1
+    var out str = ""
+    var index i64 = common
+    while (index < from.size()) {
+        if (len(out) > 0) out = out + "/"
+        out = out + ".."
+        index = index + 1
+    }
+    index = common
+    while (index < to.size()) {
+        if (len(out) > 0) out = out + "/"
+        out = out + to[index]
+        index = index + 1
+    }
+    if (len(out) == 0) return "."
+    return out
+}

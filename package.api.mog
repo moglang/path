@@ -1,0 +1,7 @@
+package path
+fn join(base str, child str) str
+fn normalize(value str) str
+fn basename(value str) str
+fn dirname(value str) str
+fn extension(value str) str
+fn relative(base str, target str) str
